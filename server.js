@@ -168,7 +168,16 @@ fu.get("/recv", function(req, res){
 });
 
 fu.get("/part", function(req,res){
+	var query = qs.parse(url.parse(req.url).query);
+	var id = query.id;
+	var session = sessions[id];
+	session.destroy();
+});
 
+// map is a 40 by 24 array
+var map = new Array(40);
+map = map.map(function(el){
+	return new Array(24);
 });
 
 var callbacks = [];
@@ -177,8 +186,17 @@ var frames = [];
 
 FRAME_WIDTH = 100; // in milliseconds
 
+var HOLD_THRESHOLD = 50;
+var count = 0;
+
 setInterval(function() {
-	if(sessions.length == 0){
+
+	var empty = true;
+	for(var i in sessions){
+		empty = false;
+		break;
+	}
+	if(empty){
 		return;
 	}
 
@@ -186,7 +204,9 @@ setInterval(function() {
 	var now = new Date().getTime();
 
 	var load = frames.shift() || [];
-	sys.puts("load is " + load);
+	/*if(load.length == 0 && ++count <= HOLD_THRESHOLD){
+		return;
+	}*/
 
 	while(callbacks.length >0){
 		var obj = callbacks.shift();
