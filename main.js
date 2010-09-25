@@ -19,12 +19,12 @@ var Y = YUI().use("node", "yql", "json", "io",
 		
 		// generate a new ID for the session
 		ID = Math.random() * 99999999 + '.' + new Date().getTime();
-		console.log(ID);
+		// console.log(ID);
 
 		// Initialize FABridge for connecting to SiON
 		FABridge.addInitializationCallback("SiON", function() {
 			flexapp = FABridge.SiON.root();
-			console.log("initialized");
+			// console.log("initialized");
 
 			function box(n) {
 				var node = Y.Node.create('<div>');
@@ -53,7 +53,7 @@ var Y = YUI().use("node", "yql", "json", "io",
 				Y.one('.panel').append(node);
 			}
 			
-			for(var i = 0; i < 3; i++){
+			for(var i = 0; i < 2; i++){
 				marker(i);
 			}
 			Y.one('.marker').addClass('marker-selected');
@@ -107,6 +107,8 @@ var Y = YUI().use("node", "yql", "json", "io",
 			
 			// draw();
 			setInterval(animate, animInterval);
+
+			Y.one('#slogan').setContent("Negotiating with Interwebs Mafia.. please wait..");
 
 			// join the server session
 			join();
@@ -188,14 +190,14 @@ var actions = [];
 var lastpolltimestamp = 0;
 
 function join() {
-	console.log("joining id is " + ID);
+	// console.log("joining id is " + ID);
 	Y.io('/join', {
 		method: 'GET',
 		data: 'id=' + ID,
 		on: {
 			success: function(txnid, resp, args){
-					console.log("obtained session");
-					console.log("txnid:" + txnid + ", resp:" + resp.responseText + ", args: " + args);
+					// console.log("obtained session");
+					// console.log("txnid:" + txnid + ", resp:" + resp.responseText + ", args: " + args);
 					var response = Y.JSON.parse(resp.responseText);
 					lastpolltimestamp = response.timestamp
 	
@@ -216,7 +218,7 @@ function setup() {
 			success: function(txnid, resp, args){
 						var response = Y.JSON.parse(resp.responseText);
 						lastpolltimestamp = response.timestamp;
-						console.log('lastpolltimestamp ' + lastpolltimestamp + ', now ' + new Date().getTime());
+						// console.log('lastpolltimestamp ' + lastpolltimestamp + ', now ' + new Date().getTime());
 						var setupComplete = response.setup;
 
 						if(setupComplete){
@@ -226,7 +228,8 @@ function setup() {
 							console.log(now - lastpolltimestamp);
 							console.log(latency/2); */
 							timediff = (now - lastpolltimestamp) - (latency/2);
-							console.log('latency=' + latency +' timediff=' + timediff);
+							// console.log('latency=' + latency +' timediff=' + timediff);
+							Y.one('#slogan').setContent('Ready. Please use Google Chrome for safety purposes.');
 							longpoll();
 						} else {
 							setup();
@@ -274,6 +277,7 @@ function longpoll() {
 
 function play() {
 	var load = framesets.shift();
+	// console.log("in play " + load.length);
 	while(load.length > 0) {
 		var entry = load.shift();
 		flexapp.play(entry.note, entry.instrument, 4);

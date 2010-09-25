@@ -122,7 +122,7 @@ fu.get("/setup", function(req, res){
 			diff = diff + (thisdiff < 0)? ( -thisdiff) : thisdiff;
 		});
 
-		if(latency < FRAME_WIDTH && diff / 3 < 10){
+		if(diff / 3 < 10){
 			session.setup = false;
 			res.simpleJSON(200, {
 				timestamp: now,
@@ -159,6 +159,24 @@ fu.get("/recv", function(req, res){
 
 	for(var i = 0; i < data.length; i++){
 		var entry = data[i];
+		if(entry.marker === 1){
+			var spliced = false;
+			for(var j = eventQueues.length - 1; j > 0; j--) {
+				var oldEvent = eventQueues[j];
+				if(oldEvent.id == id
+						&& oldEvent.i == entry.i
+						&& oldEvent.j == entry.j){
+					eventQueues.splice(i, 1);
+					spliced = true;
+					break;
+				}
+			}
+			if(spliced){
+				continue;
+			}
+		}
+		
+		entry.id = id;
 		entry.frame = frameNum;
 		entry.color = colors[id];
 		eventQueues.push(entry);
@@ -284,6 +302,7 @@ SESSION_TIMEOUT = 30000;
 
 setInterval(function() {
 	var now = new Date().getTime();
+	sys.puts("Reporting heartbeat.. " + now);
 
 	for(var i in sessions){
 		var session = sessions[i];
