@@ -7,6 +7,7 @@ var fu = require("./fu"), // stolen from node.js chat script
 	qs = require("querystring");
 
 var sessions = {};
+var colors = {};
 
 function createSession(id) {
 	
@@ -16,6 +17,14 @@ function createSession(id) {
 		var session = sessions[i];
 		if(session && session.id == id) return null;
 	}
+
+	var color = {
+		r: 128 + Math.round(Math.random() * 127),
+		g: 128 + Math.round(Math.random() * 127),
+		b: 128 + Math.round(Math.random() * 127),
+	}
+
+	//sys.puts('color: ' + JSON.stringify(color));
 
 	var session = {
 		id: id,
@@ -29,11 +38,13 @@ function createSession(id) {
 		},
 
 		destroy: function() {
+			delete colors[session.id]
 			delete sessions[session.id];
 		}
 	}
 
 	sessions[session.id] = session;
+	colors[session.id] = color;
 	return session;
 
 }
@@ -52,11 +63,11 @@ fu.get("/fabridge.js", fu.staticHandler("/fabridge.js"));
 
 // Handles other requests
 fu.get("/ping", function(req, res) {
-	sys.puts("req.url" + req.url);
-	sys.puts("url.parse" + url.parse(req.url).query);
+//	sys.puts("req.url" + req.url);
+//	sys.puts("url.parse" + url.parse(req.url).query);
 
 	id = qs.parse(url.parse(req.url).query).id;
-	sys.puts("user of id " + id + " has pinged us");
+//	sys.puts("user of id " + id + " has pinged us");
 
 	res.simpleJSON(200, {
 		ping: "pong"		
@@ -111,9 +122,7 @@ fu.get("/setup", function(req, res){
 			diff = diff + (thisdiff < 0)? ( -thisdiff) : thisdiff;
 		});
 
-		sys.puts("diff=" + diff);
-
-		if(diff / 3 < 10){
+		if(latency < FRAME_WIDTH && diff / 3 < 10){
 			session.setup = false;
 			res.simpleJSON(200, {
 				timestamp: now,
@@ -146,8 +155,17 @@ fu.get("/recv", function(req, res){
 
 	var data = JSON.parse(query.data);
 
-	sys.puts('data:' + typeof data + ", " + data + ", " + data.length);
-	
+	// sys.puts('data:' + typeof data + ", " + data + ", " + data.length);
+
+	for(var i = 0; i < data.length; i++){
+		var entry = data[i];
+		entry.frame = frameNum;
+		entry.color = colors[id];
+		eventQueues.push(entry);
+	}
+
+	// sys.puts(JSON.stringify(eventQueues));
+	/* 
 	while(data.length > 0){
 		var entry = data.shift();
 		var num = entry.delay;
@@ -157,7 +175,7 @@ fu.get("/recv", function(req, res){
 			}
 		}
 		frames[num - 1].push(entry);
-	}
+	} */
 	
 	callbacks.push({
 		id: id,
@@ -183,11 +201,15 @@ map = map.map(function(el){
 var callbacks = [];
 var frameNum = 0;
 var frames = [];
+var eventQueues = [];
 
 FRAME_WIDTH = 100; // in milliseconds
 
 var HOLD_THRESHOLD = 50;
 var count = 0;
+var FRAME_MAX = 65525;
+
+var CASE_ONE_DELAY = 2;
 
 setInterval(function() {
 
@@ -203,14 +225,47 @@ setInterval(function() {
 	frameNum = (frameNum + 1) % 65525;
 	var now = new Date().getTime();
 
-	var load = frames.shift() || [];
+	// var load = frames.shift() || [];
 	/*if(load.length == 0 && ++count <= HOLD_THRESHOLD){
 		return;
 	}*/
+	
+	var load = [];
+	for(var i = eventQueues.length - 1; i > 0; i--){
+		var entry = eventQueues[i];
+		var framesdiff = 0;
+		if(entry.frame > frameNum) {
+			// assume wrap
+			framesdiff = frameNum + (FRAME_MAX - entry.frame) 
+		} else {
+			framesdiff = frameNum - entry.frame;
+		}
+		switch(entry.marker) {
+			case 0:
+				if(framesdiff >= CASE_ONE_DELAY){
+					load.push(entry);
+					eventQueues.splice(i, 1);
+				}
+				break;
+			case 1:
+//				sys.puts('framesdiff: ' + framesdiff + " entry.duration: " + entry.duration);
+				if(framesdiff % entry.duration == 0){
+					load.push(entry);
+				}
+				break;
+/* 			case 3:
+
+				break; */
+		}
+	}	
+
+//	sys.puts('load: ' + JSON.stringify(load));
 
 	while(callbacks.length >0){
 		var obj = callbacks.shift();
 		var session = sessions[obj.id];
+
+		// sys.puts(JSON.stringify(colors[obj.id]));
 
 		var data = {
 			nextFrame: frameNum,
@@ -223,8 +278,6 @@ setInterval(function() {
 		obj.res.simpleJSON(200, data);
 	}
 }, FRAME_WIDTH);
-
-
 
 // sesssion cleanup thread
 SESSION_TIMEOUT = 30000;

@@ -13,91 +13,88 @@
 		swfobject.embedSWF("SiONLib.swf", "flash", "1", "1", "10.0.0", "expressInstall.swf", { bridgeName: "SiON" });
 	</script>
 	<script type="text/javascript" src="fabridge.js"></script>
-
 	<script type="text/javascript" src="http://yui.yahooapis.com/3.2.0/build/yui/yui-min.js"></script>
-	<!-- script type="text/javascript" src="http://api.maps.yahoo.com/ajaxymap?v=3.8&appid=PSlm0YDIkY3_nRmX1bwhioHDgNDJ8Lv_sg- -"></script note the space please remove it -->
-	<script type="text/javascript" src="raphael-min.js"></script>
 	<script type="text/javascript" src="main.js"></script>
+	<style>
+		html, body {
+			width: 100%;
+			margin: 0;
+			background: #130514;
+			color: white;
+			font-family: 'Century Gothic';
+			font-weight: light;
+			text-align: center;
+		}
+
+		h1 {
+			text-align: center;
+		}
+
+		#wrapper {
+			width: 1000px;
+			margin: 0 auto;
+			position: relative;
+			top: 20px;
+		}
+
+		.button {
+			width: 50px;
+			height: 50px;
+			float: left;
+			margin-left: 10px;
+			border: 1px solid #999999;
+		}
+
+		.instrument {
+			width: 19px;
+			height: 19px;
+			margin: 0 0 10px 10px;
+			background: #963c68;
+			float: left;
+			cursor: pointer;
+		}
+
+		.instrument-selected {
+			background: #620236;
+		}
+
+		.marker {
+			width: 29px;
+			height: 29px;
+			margin: 0 0 10px 10px;
+			background: #963c68;
+			float:left;
+			cursor: pointer;
+		}
+
+		.marker-selected {
+			background: #620236;
+		}
+
+		.duration {
+			width: 19px;
+			height: 19px;
+			margin: 0 0 0 10px;
+			background: #963c68;
+			float: left;
+			text-align: center;
+			color: #ccc;
+			cursor: pointer;
+		}
+
+		.duration-selected {
+			background: #620236;
+			color: white;
+		}
+
+		.panel {
+			width: 120px;
+			position: absolute;
+			bottom: 0;
+		}
+	</style>
 </head>
 
-<style>
-	html, body {
-		width: 100%;
-		margin: 0;
-		background: #130514;
-		color: white;
-		font-family: 'Century Gothic';
-		font-weight: light;
-		text-align: center;
-	}
-
-	h1 {
-		text-align: center;
-	}
-
-	#wrapper {
-		width: 1000px;
-		margin: 0 auto;
-		position: relative;
-		top: 20px;
-	}
-
-	.button {
-		width: 50px;
-		height: 50px;
-		float: left;
-		margin-left: 10px;
-		border: 1px solid #999999;
-	}
-
-	.instrument {
-		width: 19px;
-		height: 19px;
-		margin: 0 0 10px 10px;
-		background: #963c68;
-		float: left;
-		cursor: pointer;
-	}
-
-	.instrument-selected {
-		background: #620236;
-	}
-
-	.marker {
-		width: 29px;
-		height: 29px;
-		margin: 0 0 10px 10px;
-		background: #963c68;
-		float:left;
-		cursor: pointer;
-	}
-
-	.marker-selected {
-		background: #620236;
-	}
-
-	.duration {
-		width: 19px;
-		height: 19px;
-		margin: 0 0 0 10px;
-		background: #963c68;
-		float: left;
-		text-align: center;
-		color: #ccc;
-		cursor: pointer;
-	}
-
-	.duration-selected {
-		background: #620236;
-		color: white;
-	}
-
-	.panel {
-		width: 120px;
-		position: absolute;
-		bottom: 0;
-	}
-</style>
 <body>
 	<canvas id="canvas" width="730" height="490"></canvas>
 	<div class="panel"></div>
