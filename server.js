@@ -39,6 +39,13 @@ function createSession(id) {
 
 		destroy: function() {
 			delete colors[session.id]
+
+			for(var i = eventQueues.length - 1; i > 0; i--){
+				if(eventQueues[i].id == session.id){
+					eventQueues.splice(i, 1);
+				}
+			}
+
 			delete sessions[session.id];
 		}
 	}
